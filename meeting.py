@@ -127,7 +127,7 @@ def send_email():
   	"senderEmail": "test@email.com",
   	"subject": "Reminder about your scheduled meeting",
   	"text": "Hello, this is a reminder that your shceduled meeting time is at: " + meeting_time,
-  	"html": "<!DOCTYPE html><html><body><h1>Test Header</h1></body></html>"
+  	"html": "<!DOCTYPE html><html><body><h1>Reminder about your scheduled meeting</h1><h2>Hello, this is a reminder that your shceduled meeting time is at: "+ meeting_time+"</h2></body></html>"
 	}
 	requests.post(url, json=json_req)
 	return redirect("/")

@@ -51,7 +51,7 @@ def show_main():
 		dt_list.append(dt_range)
 	start_time = "No Time Available"
 	end_time = "No Time Available"
-	if len(dt_list) > 0:
+	if len(dt_list) > 1:
 		calc_time = get_intersect(dt_list)
 		
 		# Convert time to standard format for local timezone conversion in browser
@@ -75,26 +75,20 @@ def add_meeting():
 	end_time = str(request.form['end_time'])
 	offset = str(request.form['time_zone'])
 	new_meeting = Meeting()
-	ofs_hours, ofs_minutes = map(int, offset.split(':'))
-
+	offset = offset.replace(':', '')
+	
 	# Convert time to python datetime format. If UTC offset is negative set meeting.is_minus to 1
-	if '-' in offset:
-		new_meeting.is_minus = 1
-		offset = offset.replace('-', '')
-		new_meeting.start_time = datetime.strptime("2021-1-1 "+ start_time, '%Y-%m-%d %H:%M') - timedelta(hours=ofs_hours, minutes=ofs_minutes)
-		new_meeting.end_time = datetime.strptime("2021-1-1 "+  end_time, '%Y-%m-%d %H:%M') - timedelta(hours=ofs_hours, minutes=ofs_minutes)
-	else:
-		new_meeting.is_minus = 0
-		new_meeting.start_time = datetime.strptime("2021-1-1 "+ start_time, '%Y-%m-%d %H:%M') + timedelta(hours=ofs_hours, minutes=ofs_minutes)
-		new_meeting.end_time = datetime.strptime("2021-1-1 "+  end_time, '%Y-%m-%d %H:%M') + timedelta(hours=ofs_hours, minutes=ofs_minutes)
-
-	if '+' in offset:
-		offset = offset.replace('+','')
-
+	
+	new_meeting.start_time = datetime.strptime("2021-1-1 "+ start_time + offset, '%Y-%m-%d %H:%M%z') 
+	new_meeting.end_time = datetime.strptime("2021-1-1 "+  end_time + offset, '%Y-%m-%d %H:%M%z') 
+	
+	
+	new_meeting.start_time = new_meeting.start_time.astimezone(pytz.utc) 
+	new_meeting.end_time = new_meeting.end_time.astimezone(pytz.utc)
 	new_meeting.start_time = str(new_meeting.start_time)
 	new_meeting.end_time = str(new_meeting.end_time)
-	new_meeting.start_time = new_meeting.start_time + "+0000"
-	new_meeting.end_time = new_meeting.end_time+"+0000"
+	print(new_meeting.start_time)
+	print(new_meeting.end_time)
 	new_meeting.name = name
 	new_meeting.time_zone = time_zone
 	new_meeting.start_simple = start_time

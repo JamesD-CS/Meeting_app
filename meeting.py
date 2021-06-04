@@ -37,6 +37,51 @@ def get_intersect(numlist):
     else:
         return numlist[0].intersection(get_intersect(numlist[1:]))
 
+# Converts datetime object to utc time and returns it as a string 
+def convert_time(time):
+
+	utc_time = time.astimezone(pytz.utc)
+	converted_time_string = str(utc_time)
+	print(converted_time_string)
+	return converted_time_string
+
+# Create a new meeting object
+def create_new_meeting(meeting_data):
+	new_meeting = Meeting()
+	new_meeting.name= meeting_data["name"]
+	new_meeting.start_time = meeting_data["start"]
+	new_meeting.end_time = meeting_data["end"]
+	new_meeting.time_zone = meeting_data["time_zone"]
+	new_meeting.offset = meeting_data["offset"]
+	new_meeting.start_simple = meeting_data["s_start"]
+	new_meeting.end_simple = meeting_data["s_end"]
+
+	return new_meeting
+
+# Extract form data from request and perform time formatting functions. Returns dicitonary of formatted data
+def convert_request(request):
+	name = request.form['name']
+	time_zone = request.form['tz_name']
+	start_time = str(request.form['start_time'])
+	end_time = str(request.form['end_time'])
+	offset = str(request.form['time_zone'])
+	offset = offset.replace(':', '')
+
+	# Convert form data to python datetime object
+	formatted_start_time = datetime.strptime("2021-1-1 "+ start_time + offset, '%Y-%m-%d %H:%M%z') 
+	formatted_end_time = datetime.strptime("2021-1-1 "+  end_time + offset, '%Y-%m-%d %H:%M%z') 
+
+	# Convert datetime object to UTC time and convert datetime object to string
+	formatted_start_time = convert_time(formatted_start_time)
+	formatted_end_time = convert_time(formatted_end_time)
+
+	# build meeting data dictionary
+	meeting_data = {"name":name, "start":formatted_start_time, "end":formatted_end_time, "time_zone":time_zone, \
+	"offset":offset,"s_start":start_time, "s_end":end_time}
+
+	return meeting_data
+
+
 @app.route('/test')
 def test():
 	return "Hello World!"
@@ -61,7 +106,6 @@ def show_main():
 		start_time = start_time.replace(':00+0000', ':00Z')
 		end_time = time_list[1]
 		end_time = end_time.replace(':00+0000', ':00Z')
-		#print(start_time)
 		if "NaT" in str(calc_time):
 			calc_time = "No Meeting Time Available"
 	
@@ -69,34 +113,12 @@ def show_main():
 
 @app.route('/add-meeting', methods = ['POST'])
 def add_meeting():
-	name = request.form['name']
-	time_zone = request.form['tz_name']
-	start_time = str(request.form['start_time'])
-	end_time = str(request.form['end_time'])
-	offset = str(request.form['time_zone'])
-	new_meeting = Meeting()
-	offset = offset.replace(':', '')
 	
-	# Convert time to python datetime format. If UTC offset is negative set meeting.is_minus to 1
+	meeting_data = convert_request(request)
+
+	meeting = create_new_meeting(meeting_data)	
 	
-	new_meeting.start_time = datetime.strptime("2021-1-1 "+ start_time + offset, '%Y-%m-%d %H:%M%z') 
-	new_meeting.end_time = datetime.strptime("2021-1-1 "+  end_time + offset, '%Y-%m-%d %H:%M%z') 
-	
-	
-	new_meeting.start_time = new_meeting.start_time.astimezone(pytz.utc) 
-	new_meeting.end_time = new_meeting.end_time.astimezone(pytz.utc)
-	new_meeting.start_time = str(new_meeting.start_time)
-	new_meeting.end_time = str(new_meeting.end_time)
-	print(new_meeting.start_time)
-	print(new_meeting.end_time)
-	new_meeting.name = name
-	new_meeting.time_zone = time_zone
-	new_meeting.start_simple = start_time
-	new_meeting.end_simple = end_time
-	
-	new_meeting.offset = offset
-	
-	db.session.add(new_meeting)
+	db.session.add(meeting)
 	db.session.commit()
 
 	return redirect("/")
@@ -129,8 +151,7 @@ def send_email():
 
 @app.route('/db-test')
 def db_test():
-	#meeting = Meeting.query.first()
-	#name = meeting.name
+	
 	meeting_list = Meeting.query.all()
 	return render_template("main.j2", meetings = meeting_list)
 

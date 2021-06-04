@@ -114,6 +114,7 @@ def delete_meeting(id):
 def send_email():
 	meeting_time = request.form['meeting_time']
 	email = request.form['email']
+	time_zone = request.form['time_zone_field']
 	url = "http://flip1.engr.oregonstate.edu:9584/"
 	json_req = {
   	"recipient": email,
@@ -121,7 +122,7 @@ def send_email():
   	"senderEmail": "test@email.com",
   	"subject": "Reminder about your scheduled meeting",
   	"text": "Hello, this is a reminder that your shceduled meeting time is at: " + meeting_time,
-  	"html": "<!DOCTYPE html><html><body><h1>Reminder about your scheduled meeting</h1><h2>Hello, this is a reminder that your shceduled meeting time is at: "+ meeting_time+"</h2></body></html>"
+  	"html": "<!DOCTYPE html><html><body><h1>Reminder about your scheduled meeting</h1><h2>Hello, this is a reminder that your shceduled meeting time is at: "+ meeting_time+ " " +time_zone+ " Time"+ "</h2></body></html>"
 	}
 	requests.post(url, json=json_req)
 	return redirect("/")

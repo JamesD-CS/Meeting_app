@@ -16,16 +16,20 @@
 
             var start_time = "{{start_time}}"
             var s = new Date(start_time);
-            
+            var timezone = Intl.DateTimeFormat().resolvedOptions().timeZone.toString();
 
             var end_time = "{{end_time}}"
             var e = new Date(end_time);
             var converted_time_string = s.toLocaleTimeString() + ' - ' + e.toLocaleTimeString();
 
             document.getElementById("calc_time").innerHTML = s.toLocaleTimeString() + ' - ' + e.toLocaleTimeString();
+            document.getElementById("time_zone_display").innerHTML = timezone;
 
             var meeting_time_input = document.getElementById("meeting_time");
             meeting_time.value = converted_time_string;
+
+            var tz_field = document.getElementById("time_zone_field");
+            tz_field.value = timezone;
             }
          </script>
 <div class = "container" id="container">
@@ -72,12 +76,16 @@
 <form id="new_time" action="/add-meeting" method="post" class="form">
 
   <label for="name">Name</label>
-  
-  <input type="text" name="name" id="name" class="form_input">
+  <div class = "tooltip">
+    <span class="tooltiptext">Enter your name here.</span>
+    <input type="text" name="name" id="name" class="form_input">
+  </div>
   <br>
   <br>
    <label for="time_zone">Time Zone:</label>
-  
+
+<div class = "tooltip">
+    <span class="tooltiptext">Select your time zone from the drop down menu.</span>  
 <select name="time_zone" id="time_zone" class="form_select">
   <option></option>
   <option value="-12:00">(GMT -12:00) Eniwetok, Kwajalein</option>
@@ -122,29 +130,42 @@
   <option value="+14:00">(GMT +14:00) Line Islands, Tokelau</option>
 
 </select> 
+</div>
 <br>
 <br>
   <h3> Time Available: </h3>
   <label for="time">From:</label>
-  
-  <input type="time" name="start_time" id="start_time" class="form_input">
-
+  <div class = "tooltip">
+    <span class="tooltiptext">Enter the start range of your meeting availability</span>
+    <input type="time" name="start_time" id="start_time" class="form_input">
+  </div>
   <br>
   <label for="time">To:</label>
-  
-  <input type="time" name="end_time" id="end_time" class="form_input">
-    
+  <div class = "tooltip">
+    <span class="tooltiptext">Enter the end range of your meeting availability</span>
+    <input type="time" name="end_time" id="end_time" class="form_input">
+  </div>  
   
   <input type="hidden" id="tz_name" name="tz_name">
-  <input type="submit" value="Submit" class = "form_submit" >
+  <br>
+  <div class = "tooltip">
+    <span class="tooltiptext">Click submit to calculate a meeting time</span>
+    <input type="submit" value="Submit" class = "form_submit" >
+  </div>
  </form>
 
  <br>
  
 
 <form id = "email" action = "/send-email" method = "POST" class="form">
-<h3>Calculated Meeting Time<h3>
+<h3>Calculated Meeting Time</h3>
  <div id="calc_time" class="meeting_display">
+
+
+</div>
+
+<h4>Time Zone</h4>
+<div id="time_zone_display" class="meeting_display">
 
 
 </div>
@@ -154,7 +175,8 @@
   
   <input type="email" name="email" class="form_input">
   <input type="submit" value="Send Email" class="form_submit">
-  <input type ="hidden" id="meeting_time" name="meeting_time">
+  <input type = "hidden" id="meeting_time" name="meeting_time">
+  <input type="hidden" id="time_zone_field" name="time_zone_field">
 
 </form>
  <br>
